@@ -108,4 +108,4 @@ Projeto desenvolvido como parte do currículo da **Escola da Nuvem** pela equipe
 
 - Ricardo Silva
 - Felipe Maya
-- Igor
+- Igor da Costa
