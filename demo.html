@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocMind IA — Demonstração funcional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0E13; --bg-alt:#12161D; --card:#171C24;
+  --border:#262C36; --border-soft:#1A1F28;
+  --text:#F2F2F5; --text-muted:#B2B2C0; --text-dim:#86869A;
+  --accent:#FF9900; --accent2:#FFC300; --accent-soft:rgba(255,153,0,.14); --accent-dim:#5C3814;
+  --accent-gradient:linear-gradient(135deg,#FF9900,#EC7211);
+  --teal:#6FBE44; --teal-soft:rgba(111,190,68,.15);
+  --ice:#8C4FFF; --ice-soft:rgba(140,79,255,.15);
+  --red:#DD344C; --red-soft:rgba(221,52,76,.15);
+  --green:#45BE8A; --green-soft:rgba(69,190,138,.15);
+  --pink:#E7157B; --pink-soft:rgba(231,21,123,.15);
+  --display:'Inter',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{background:var(--bg); color:var(--text); font-family:var(--body); min-height:100vh;}
+body{background:radial-gradient(circle at 85% -10%, rgba(255,153,0,.10), transparent 55%), var(--bg); padding:28px 32px 60px;}
+::selection{background:var(--accent); color:#0B0E13;}
+a{color:inherit;}
+
+/* ---------- Header ---------- */
+#topbar{display:flex; align-items:center; justify-content:space-between; max-width:1360px; margin:0 auto 22px; flex-wrap:wrap; gap:14px;}
+.brand{display:flex; align-items:center; gap:11px;}
+.brand svg{flex-shrink:0;}
+.brand-text b{font-family:var(--display); font-weight:800; font-size:18px; letter-spacing:-.3px;}
+.brand-text span{display:block; font-family:var(--mono); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); margin-top:1px;}
+.top-controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.sim-badge{font-family:var(--mono); font-size:10.5px; letter-spacing:.5px; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-dim); padding:6px 12px; border-radius:20px;}
+select#tenantSelect{background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-family:var(--body); font-size:13px; cursor:pointer; outline:none;}
+select#tenantSelect:focus{border-color:var(--accent);}
+
+/* ---------- Disclosure banner ---------- */
+.disclosure{max-width:1360px; margin:0 auto 26px; background:var(--bg-alt); border:1px solid var(--border-soft); border-left:3px solid var(--ice); border-radius:8px; padding:12px 18px; font-size:12.5px; color:var(--text-muted); line-height:1.6;}
+.disclosure b{color:var(--text);}
+
+/* ---------- Layout ---------- */
+.layout{max-width:1360px; margin:0 auto; display:grid; grid-template-columns:1.55fr 1fr; gap:22px; align-items:start;}
+@media (max-width:980px){ .layout{grid-template-columns:1fr;} }
+
+.card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px;}
+.card + .card{margin-top:20px;}
+.card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; flex-wrap:wrap;}
+.card-head h2{font-family:var(--display); font-size:15.5px; font-weight:700;}
+.card-head p{font-size:12px; color:var(--text-dim); margin-top:3px;}
+
+/* ---------- Time control ---------- */
+.time-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+.time-row input[type=range]{flex:1; min-width:180px; -webkit-appearance:none; height:4px; background:var(--border); border-radius:3px; outline:none;}
+.time-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; border:3px solid var(--bg);}
+.time-readout{font-family:var(--mono); font-size:13px; color:var(--accent); font-weight:600; white-space:nowrap;}
+.time-hint{font-size:11.5px; color:var(--text-dim); margin-top:8px; line-height:1.5;}
+
+/* ---------- Upload zone ---------- */
+.dropzone{border:1.5px dashed var(--border); border-radius:12px; padding:26px 20px; text-align:center; cursor:pointer; transition:all .15s; background:var(--bg-alt);}
+.dropzone:hover, .dropzone.drag{border-color:var(--accent); background:var(--accent-soft);}
+.dropzone .dz-icon{font-size:22px; margin-bottom:8px;}
+.dropzone b{font-size:13.5px;}
+.dropzone p{font-size:11.5px; color:var(--text-dim); margin-top:5px;}
+#fileInput{display:none;}
+
+/* ---------- Table ---------- */
+table.docs{width:100%; border-collapse:collapse; margin-top:18px;}
+table.docs thead th{font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); text-align:left; padding:0 10px 10px; border-bottom:1px solid var(--border);}
+table.docs tbody td{padding:12px 10px; border-bottom:1px solid var(--border-soft); font-size:12.5px; color:var(--text-muted); vertical-align:middle;}
+table.docs tbody tr:last-child td{border-bottom:none;}
+.doc-name{color:var(--text); font-weight:600; display:flex; align-items:center; gap:9px;}
+.doc-name .fi{width:26px; height:26px; border-radius:7px; background:var(--bg-alt); display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;}
+.tier-pill{font-family:var(--mono); font-size:10px; letter-spacing:.5px; padding:4px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;}
+.tier-pill.standard{background:var(--teal-soft); color:var(--teal);}
+.tier-pill.glacier{background:var(--ice-soft); color:var(--ice);}
+.btn-dl{background:none; border:1px solid var(--border); color:var(--text-muted); font-family:var(--mono); font-size:11px; padding:6px 12px; border-radius:7px; cursor:pointer; transition:all .15s;}
+.btn-dl:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+.btn-rm{background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; padding:4px 6px;}
+.btn-rm:hover{color:var(--red);}
+.empty-row td{padding:36px 10px; text-align:center; color:var(--text-dim); font-size:12.5px; line-height:1.6;}
+
+/* ---------- IAM test ---------- */
+.iam-test{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:6px;}
+.btn-iam{background:var(--red-soft); border:1px solid #6b2230; color:var(--red); font-family:var(--mono); font-size:11.5px; padding:9px 16px; border-radius:8px; cursor:pointer; white-space:nowrap;}
+.btn-iam:hover{background:rgba(221,52,76,.24);}
+
+/* ---------- Terminal ---------- */
+.terminal{background:#08080B; border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:10px; padding:14px 18px 16px;}
+.terminal .t-title{font-family:var(--mono); font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
+.terminal .t-title .dots{display:flex; gap:5px;}
+.terminal .t-title .dots span{width:7px; height:7px; border-radius:50%; display:inline-block;}
+.t-log{height:230px; overflow-y:auto; font-family:var(--mono); font-size:11.5px; line-height:1.75;}
+.t-line{margin-bottom:2px; color:var(--text-muted);}
+.t-line .tt{color:var(--text-dim); margin-right:7px;}
+
+/* ---------- Cost card ---------- */
+.cost-grid{display:grid; gap:10px;}
+.cost-row{display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--text-muted);}
+.cost-row b{color:var(--text); font-family:var(--mono);}
+.cost-total{margin-top:6px; padding-top:14px; border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:baseline;}
+.cost-total .lbl{font-size:12.5px; color:var(--text-muted);}
+.cost-total .val{font-family:var(--display); font-size:22px; font-weight:800; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.cost-ref{margin-top:14px; padding:12px 14px; background:var(--bg-alt); border-radius:8px; font-size:11.5px; color:var(--text-dim); line-height:1.6;}
+.cost-ref b{color:var(--text-muted);}
+
+/* ---------- Security card ---------- */
+.sec-item{display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--border-soft);}
+.sec-item:first-child{border-top:none; padding-top:0;}
+.sec-item .dot{width:7px; height:7px; border-radius:50%; background:var(--green); margin-top:5px; flex-shrink:0;}
+.sec-item .st{font-size:12.5px; color:var(--text-muted); line-height:1.55;}
+.sec-item .st b{color:var(--text); font-weight:600;}
+code.inline{font-family:var(--mono); background:var(--bg-alt); border:1px solid var(--border); padding:1px 6px; border-radius:5px; font-size:11px; color:var(--accent);}
+
+.footer-note{max-width:1360px; margin:26px auto 0; font-size:11.5px; color:var(--text-dim); text-align:center; line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 20 20" fill="none"><path d="M2 10 L10 2 L18 10 L10 18 Z M6 10 L10 6 L14 10 L10 14 Z" fill="#FF9900"/></svg>
+    <div class="brand-text"><b>DocMind IA</b><span>Console do cliente</span></div>
+  </div>
+  <div class="top-controls">
+    <span class="sim-badge">● simulação client-side — sem backend real</span>
+    <select id="tenantSelect" onchange="switchTenant(this.value)">
+      <option value="alpha">Empresa Alpha (usuario-alpha)</option>
+      <option value="beta">Empresa Beta (usuario-beta)</option>
+    </select>
+  </div>
+</div>
+
+<div class="disclosure">
+  <b>Demonstração funcional</b> do fluxo descrito no case — os uploads e downloads realmente acontecem (nesta aba do navegador), reproduzindo passo a passo o que aconteceria em <b>API Gateway → Lambda → S3</b>. Não existe backend AWS por trás: os "objetos" ficam guardados na memória do navegador, e o terminal ao lado mostra a mesma sequência de eventos que apareceria no CloudWatch em produção.
+</div>
+
+<div class="layout">
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>⏱ Avançar o tempo</h2>
+          <p>Simula meses de operação — a regra de Lifecycle transiciona os arquivos sozinha aos 12 meses.</p>
+        </div>
+      </div>
+      <div class="time-row">
+        <input type="range" id="rngMonths" min="0" max="36" step="1" value="0" oninput="setMonths(this.value)">
+        <span class="time-readout" id="monthsReadout">mês 0 · S3 Standard</span>
+      </div>
+      <p class="time-hint">Arraste até o mês 12 pra ver a transição automática pro Glacier Deep Archive acontecer sozinha, sem nenhuma ação manual.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>📤 Enviar documento</h2>
+          <p>Upload real — o arquivo fica guardado nesta aba, com o prefixo do tenant atual.</p>
+        </div>
+      </div>
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">📄</div>
+        <b>Clique ou arraste um arquivo aqui</b>
+        <p>Vira <code class="inline" id="prefixHint">usuario-alpha/arquivo.pdf</code> — igual ao case real</p>
+      </div>
+      <input type="file" id="fileInput" onchange="handleFiles(this.files)">
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>🗂 Documentos — <span id="tenantLabel">Empresa Alpha</span></h2>
+          <p>Isolados por prefixo IAM. Cada tenant só enxerga os próprios arquivos.</p>
+        </div>
+      </div>
+      <table class="docs">
+        <thead>
+          <tr><th>Arquivo</th><th>Tamanho</th><th>Enviado</th><th>Camada</th><th></th></tr>
+        </thead>
+        <tbody id="docsBody"></tbody>
+      </table>
+
+      <div class="iam-test">
+        <span style="font-size:11.5px; color:var(--text-dim);">Testar isolamento: tentar ler um arquivo de outro tenant direto pela chave.</span>
+        <button class="btn-iam" onclick="attemptCrossTenant()">🔒 Simular acesso cruzado</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>📟 Log de execução</h2>
+          <p>aws logs tail /docmind/execution --follow</p>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="t-title">
+          <span>CloudWatch — em tempo real</span>
+          <span class="dots"><span style="background:#DD344C;"></span><span style="background:#E8B84B;"></span><span style="background:#45BE8A;"></span></span>
+        </div>
+        <div class="t-log" id="terminalLog"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div><h2>💰 Custo desta simulação</h2><p>Mesma fórmula da calculadora do case, preços oficiais AWS jul/2026.</p></div></div>
+      <div class="cost-grid">
+        <div class="cost-row"><span>Armazenamento (S3)</span><b id="costStorage">$0.000000</b></div>
+        <div class="cost-row"><span>Requisições simuladas</span><b id="costRequests">$0.000000</b></div>
+      </div>
+      <div class="cost-total"><span class="lbl">Total nesta demo</span><span class="val" id="costTotal">$0.00</span></div>
+      <div class="cost-ref">
+        Com arquivos de demonstração isso fica perto de zero — o que importa é a <b>fórmula</b>, não o valor. No cenário real do case (50 mil arquivos/mês, 2 MB cada), essa mesma conta dá <b>≈ $30–40/mês</b>, como mostrado na calculadora da apresentação.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div><h2>🔐 O que está garantindo a segurança</h2></div></div>
+      <div class="sec-item"><div class="dot"></div><div class="st"><b>Block Public Access</b> — ligado em 100% do bucket, não dá pra desligar por engano.</div></div>
+      <div class="sec-item"><div class="dot"></div><div class="st"><b>IAM de menor privilégio</b> — a role só enxerga <code class="inline">usuario-{id}/*</code>, o prefixo do tenant logado.</div></div>
+      <div class="sec-item"><div class="dot"></div><div class="st"><b>Prefixo por usuário</b> — cada tenant vive isolado logicamente dentro do mesmo bucket.</div></div>
+      <div class="sec-item"><div class="dot"></div><div class="st"><b>URL assinada</b> — todo link de upload/download expira em minutos, gerado sob demanda pela Lambda.</div></div>
+    </div>
+  </div>
+</div>
+
+<p class="footer-note">DocMind IA · protótipo de demonstração baseado no case de arquitetura AWS serverless — API Gateway + Lambda + S3 (Lifecycle)</p>
+
+<script>
+/* ---------- Pricing (mesmas constantes da calculadora do case, us-east-1, jul/2026) ---------- */
+const PRICE = { s3Standard:0.023, s3Glacier:0.00099, s3Put:0.005, s3Get:0.0004 };
+
+/* ---------- Estado ---------- */
+const tenants = {
+  alpha: { name:'Empresa Alpha', prefix:'usuario-alpha' },
+  beta:  { name:'Empresa Beta',  prefix:'usuario-beta' }
+};
+let currentTenant = 'alpha';
+let monthsElapsed = 0;
+let docs = { alpha: [], beta: [] };
+let requestCount = 0;
+let docSeq = 0;
+
+/* ---------- Terminal ---------- */
+function log(html, color){
+  const el = document.getElementById('terminalLog');
+  const time = new Date().toLocaleTimeString('pt-BR');
+  const line = document.createElement('div');
+  line.className = 't-line';
+  line.innerHTML = `<span class="tt">[${time}]</span><span style="color:${color||'inherit'}">${html}</span>`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+  requestCount++;
+}
+
+/* ---------- Tenant ---------- */
+function switchTenant(id){
+  currentTenant = id;
+  document.getElementById('tenantLabel').textContent = tenants[id].name;
+  document.getElementById('prefixHint').textContent = `${tenants[id].prefix}/arquivo.pdf`;
+  log(`<span style="color:var(--ice);">[IAM]</span> Sessão trocada — policy agora restringe acesso a <b>${tenants[id].prefix}/*</b>.`, null);
+  renderDocs();
+  renderCost();
+}
+
+/* ---------- Tempo / Lifecycle ---------- */
+function setMonths(v){
+  monthsElapsed = +v;
+  const readout = document.getElementById('monthsReadout');
+  let transitioned = 0;
+  Object.keys(docs).forEach(t=>{
+    docs[t].forEach(d=>{
+      const wasGlacier = d.tier === 'glacier';
+      d.tier = (monthsElapsed - d.uploadedMonth) >= 12 ? 'glacier' : 'standard';
+      if(d.tier === 'glacier' && !wasGlacier) transitioned++;
+    });
+  });
+  readout.textContent = `mês ${monthsElapsed} · ${monthsElapsed>=12 ? 'transição ativa' : 'janela de acesso ativo'}`;
+  if(transitioned > 0){
+    log(`<span style="color:var(--teal);">[S3_LIFECYCLE]</span> Regra automática migrou ${transitioned} objeto(s) pra Glacier Deep Archive — nenhuma ação manual.`, null);
+  }
+  renderDocs();
+  renderCost();
+}
+
+/* ---------- Upload ---------- */
+const dz = document.getElementById('dropzone');
+['dragover','dragleave','drop'].forEach(evt=>{
+  dz.addEventListener(evt, e=>{
+    e.preventDefault();
+    dz.classList.toggle('drag', evt==='dragover');
+    if(evt==='drop') handleFiles(e.dataTransfer.files);
+  });
+});
+function handleFiles(fileList){
+  Array.from(fileList).forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const blob = new Blob([reader.result], {type:file.type || 'application/octet-stream'});
+      const doc = {
+        id: 'doc'+(docSeq++),
+        name: file.name,
+        size: file.size,
+        uploadedMonth: monthsElapsed,
+        tier: 'standard',
+        blob
+      };
+      docs[currentTenant].push(doc);
+      const prefix = tenants[currentTenant].prefix;
+      log(`<span style="color:var(--text);">[HTTPS_PUT]</span> Cliente envia <b>${file.name}</b> com token Bearer.`, null);
+      log(`<span style="color:var(--ice);">[API_GATEWAY]</span> Token validado, roteando pra Lambda.`, null);
+      log(`<span style="color:var(--accent);">[LAMBDA]</span> Gerando URL assinada restrita a <b>${prefix}/${file.name}</b> — expira em minutos.`, null);
+      log(`<span style="color:var(--teal);">[S3_STANDARD]</span> Objeto armazenado (${formatSize(file.size)}).`, null);
+      renderDocs();
+      renderCost();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+  document.getElementById('fileInput').value = '';
+}
+
+/* ---------- Download ---------- */
+function handleDownload(id){
+  const doc = docs[currentTenant].find(d=>d.id===id);
+  if(!doc) return;
+  const prefix = tenants[currentTenant].prefix;
+  log(`<span style="color:var(--text);">[HTTPS_GET]</span> Cliente solicita download de <b>${doc.name}</b>.`, null);
+  log(`<span style="color:var(--ice);">[API_GATEWAY]</span> Token validado.`, null);
+  log(`<span style="color:var(--accent);">[LAMBDA]</span> Gerando URL assinada de leitura restrita a <b>${prefix}/${doc.name}</b>.`, null);
+  if(doc.tier === 'glacier'){
+    log(`<span style="color:var(--ice);">[S3_GLACIER]</span> Objeto em camada fria — restore iniciado (no mundo real leva de 3 a 12h).`, null);
+    log(`<span style="color:var(--ice);">[S3_GLACIER]</span> Restore concluído (simulado). Link liberado.`, null);
+  } else {
+    log(`<span style="color:var(--teal);">[S3_STANDARD]</span> Link liberado imediatamente.`, null);
+  }
+  const url = URL.createObjectURL(doc.blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = doc.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  renderCost();
+}
+
+function removeDoc(id){
+  docs[currentTenant] = docs[currentTenant].filter(d=>d.id!==id);
+  log(`<span style="color:var(--red);">[S3_DELETE]</span> Objeto removido manualmente da simulação (fora do fluxo real — no case, nada é deletado).`, null);
+  renderDocs();
+  renderCost();
+}
+
+/* ---------- Teste de isolamento IAM ---------- */
+function attemptCrossTenant(){
+  const otherId = currentTenant === 'alpha' ? 'beta' : 'alpha';
+  const other = tenants[otherId];
+  log(`<span style="color:var(--red);">[S3_GET]</span> Tentando ler <b>${other.prefix}/qualquer-arquivo.pdf</b> a partir da sessão de ${tenants[currentTenant].name}...`, null);
+  log(`<span style="color:var(--red);">[IAM] AccessDenied</span> — a policy da role só permite ação em <b>${tenants[currentTenant].prefix}/*</b>. Requisição negada antes de tocar no S3.`, null);
+}
+
+/* ---------- Render ---------- */
+function formatSize(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(2) + ' MB';
+}
+function renderDocs(){
+  const body = document.getElementById('docsBody');
+  const list = docs[currentTenant];
+  if(list.length === 0){
+    body.innerHTML = `<tr class="empty-row"><td colspan="5">Nenhum documento ainda para ${tenants[currentTenant].name}.<br>Envie o primeiro arquivo acima pra ver upload, Lifecycle e download funcionando de verdade.</td></tr>`;
+    return;
+  }
+  body.innerHTML = list.map(d=>`
+    <tr>
+      <td><div class="doc-name"><span class="fi">📄</span>${d.name}</div></td>
+      <td>${formatSize(d.size)}</td>
+      <td>mês ${d.uploadedMonth}</td>
+      <td>${d.tier==='glacier'
+        ? '<span class="tier-pill glacier">❄ Glacier Deep Archive</span>'
+        : '<span class="tier-pill standard">☀ S3 Standard</span>'}</td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="btn-dl" onclick="handleDownload('${d.id}')">Baixar</button>
+        <button class="btn-rm" onclick="removeDoc('${d.id}')" title="Remover da simulação">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function renderCost(){
+  let storageCost = 0, requestCost = 0, puts=0, gets=0;
+  Object.values(docs).flat().forEach(d=>{
+    const gb = d.size / (1024**3);
+    storageCost += gb * (d.tier==='glacier' ? PRICE.s3Glacier : PRICE.s3Standard);
+    puts++;
+  });
+  requestCost = (puts/1000)*PRICE.s3Put;
+  document.getElementById('costStorage').textContent = '$' + storageCost.toFixed(6);
+  document.getElementById('costRequests').textContent = '$' + requestCost.toFixed(6);
+  document.getElementById('costTotal').textContent = '$' + (storageCost+requestCost).toFixed(2);
+}
+
+/* ---------- Init ---------- */
+log('<span style="color:var(--text-dim);">[SYS_INIT]</span> Ambiente carregado. Selecione um tenant e envie um arquivo pra começar.', null);
+renderDocs();
+renderCost();
+</script>
+</body>
+</html>
