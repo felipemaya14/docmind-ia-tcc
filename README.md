@@ -104,4 +104,8 @@ Este site é hospedado via **GitHub Pages**, servindo os arquivos estáticos dir
 
 ## Equipe
 
-Projeto desenvolvido em equipe de 4 pessoas como parte do currículo da **Escola da Nuvem**.
+Projeto desenvolvido como parte do currículo da **Escola da Nuvem** pela equipe:
+
+- Ricardo Silva
+- Felipe Maya
+- Igor
