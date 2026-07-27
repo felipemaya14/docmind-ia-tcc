@@ -91,9 +91,21 @@ O projeto é documentado para ser reproduzido como referência de arquitetura se
     ├── css/
     │   ├── presentation.css
     │   └── demo.css
-    └── js/
-        ├── presentation.js
-        └── demo.js
+    ├── js/
+    │   ├── presentation.js
+    │   └── demo.js
+    └── img/               # Ícones dos serviços AWS usados no diagrama de arquitetura
+        ├── cliente.png
+        ├── cognito.png
+        ├── api-gateway.png
+        ├── lambda.png
+        ├── s3.png
+        ├── s3-glacier.png
+        ├── dynamodb.png
+        ├── eventbridge.png
+        ├── kms.png
+        ├── waf.png
+        └── cloudwatch.png
 ```
 
 CSS e JavaScript ficam em arquivos próprios dentro de `assets/`, fora do HTML — cada página referencia apenas os arquivos que usa.
