@@ -85,9 +85,18 @@ O projeto é documentado para ser reproduzido como referência de arquitetura se
 
 ```
 .
-├── index.html   # Apresentação de defesa (slides interativos, navegação por teclado)
-└── demo.html    # Demonstração funcional do fluxo de upload/download
+├── index.html            # Apresentação de defesa (slides interativos, navegação por teclado)
+├── demo.html             # Demonstração funcional do fluxo de upload/download
+└── assets/
+    ├── css/
+    │   ├── presentation.css
+    │   └── demo.css
+    └── js/
+        ├── presentation.js
+        └── demo.js
 ```
+
+CSS e JavaScript ficam em arquivos próprios dentro de `assets/`, fora do HTML — cada página referencia apenas os arquivos que usa.
 
 A apresentação (`index.html`) é navegável por teclado:
 
